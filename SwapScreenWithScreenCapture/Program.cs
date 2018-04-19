@@ -19,12 +19,14 @@ namespace SwapScreenWithScreenCapture
             //FuckWithPeople();
 
             Reset();
-
         }
 
 
         public static void FuckWithPeople()
         {
+            if (!Directory.Exists("C:/TMP"))
+                Directory.CreateDirectory("C:/TMP");
+
             Display.MinimizeAll();
             Thread.Sleep(2000);
 
@@ -45,11 +47,30 @@ namespace SwapScreenWithScreenCapture
 
         public static void Reset()
         {
+            MoveAllToDesktop();
+
             Display.Rotate(1, Display.Orientations.DEGREES_CW_0);
 
             Display.SetWindowsTaskbar(Display.WindowsTaskbarSetting.SW_SHOW);
         }
 
+        public static void MoveAllToDesktop()
+        {
+            string target = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/";
+
+            string src = "C:/TMP/ICON/";
+
+            Directory.GetFiles(src).ToList().ForEach(file =>
+            {
+                File.Move(file, target + Path.GetFileName(file));
+            });
+
+            Directory.GetDirectories(src).ToList().ForEach(dir =>
+            {
+                var path = dir.Remove(0, Directory.GetParent(dir).ToString().Length + 1);
+                Directory.Move(dir, target + path);
+            });
+        }
 
         public static void MoveAllFromDesktop()
         {
@@ -57,16 +78,24 @@ namespace SwapScreenWithScreenCapture
 
             string target = "C:/TMP/ICON/";
 
-            Directory.CreateDirectory(target);
-
-            Directory.GetFileSystemEntries(src).ToList().ForEach(file =>
+            if (!Directory.Exists(target))
             {
-                var srcfile = file;
-                var targetfile = target + Path.GetFileName(file);
-                File.Move(srcfile, targetfile);
-            });
-        }
+                Directory.CreateDirectory(target);
+            }
 
+
+            Directory.GetFiles(src).ToList().ForEach(file =>
+            {
+                File.Move(file, target + Path.GetFileName(file));
+            });
+
+            Directory.GetDirectories(src).ToList().ForEach(dir =>
+            {
+                var path = dir.Remove(0, Directory.GetParent(dir).ToString().Length + 1);
+                Directory.Move(dir, target + path);
+            });
+
+        }
 
         public static Image CaptureScreen()
         {
